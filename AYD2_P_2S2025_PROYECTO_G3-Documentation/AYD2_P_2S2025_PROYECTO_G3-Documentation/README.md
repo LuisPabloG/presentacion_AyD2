@@ -1322,7 +1322,7 @@ Beneficios:
 
 El proyecto se gestiona mediante un tablero Kanban con el flujo de trabajo: **To Do → Blocked → In Progress → Ready for Testing → Test/QA → Done**.
 
-![Tablero Kanban](documentación/img/tablero-kanban.png)
+![Tablero Kanban](documentación/kanbanCaptura.png)
 
 ### 11.2 Backlog del proyecto (historias de usuario y tareas de desarrollo)
 
