@@ -772,19 +772,101 @@ La Plataforma Regional de Certificación de Competencias Digitales (PRCCD) permi
 ## 6. Vistas Arquitectónicas: Nivel de Sistema
  
 ### 6.1 Diagrama de bloques de la arquitectura de software
+
+El diagrama de bloques representa la **vista lógica de alto nivel** de la PRCCD, organizada según el estilo seleccionado: **arquitectura en capas combinada con orientación a servicios (SOA)** y un **bus de eventos** para los flujos asíncronos.
+
+![Diagrama de Bloques — Vista Lógica de Alto Nivel](documentación/entregablesFinales/UML%20ARQUITECTONICO/Diagrama_Bloques.svg)
+
+La arquitectura se descompone en cinco capas, más los actores externos:
+
+| Capa | Bloques que la componen | Responsabilidad |
+|---|---|---|
+| **Presentación** | Portal Web Estudiantes/Profesionales, Portal Auditores/Administradores SICA, Portal Consulta Universidades/Ministerios | Exponer la operación, la auditoría y la consulta/verificación a cada tipo de usuario. |
+| **Servicios (SOA)** | Servicio de Evaluación Adaptativa, Servicio de Certificación Regional, Servicio de Auditoría Anti-fraude, Servicio de Integración Académica, Servicio de Analítica Regional | Cada servicio corresponde a uno de los cinco procesos de negocio de la primera descomposición del Core; son independientes y escalables por separado. |
+| **Lógica de Negocio** | Motor de Exámenes Adaptativos, Motor de Emisión Criptográfica (PKI/Blockchain), Motor de Detección de Fraude, Orquestador de Reglas de Negocio | Concentra las reglas de negocio de cada servicio. |
+| **Integración** | Adaptador LDAP/SAML/OAuth2 (USAC, UCR, UES), Pasarela de Formatos (JSON/XML/CSV) | Aísla la heterogeneidad de protocolos y formatos de las universidades; implementa el patrón **Adapter**. |
+| **Datos** | BD Evaluación (OLTP), BD Certificados (OLTP), Almacén de Evidencia (optimizado en costo), Ledger Blockchain/PKI (inmutable), Repositorio Analítico (OLAP) | Separa el almacenamiento transaccional, la evidencia de alta volumetría, la bitácora inmutable y el repositorio analítico. |
+
+Atravesando las capas de servicios y datos se ubica el **Bus de Eventos (asíncrono)**, que transporta evidencia anti-fraude, notificaciones, cambios de estado académico y el ETL hacia la analítica, desacoplando los flujos que no requieren respuesta inmediata.
+
+Los actores externos —**Universidades (USAC, UCR, UES)**, **Ministerios de Educación, Trabajo y Financieras** y **Secretaría General del SICA**— interactúan con el sistema a través de la capa de integración (LDAP/SAML/OAuth2, JSON/XML/CSV), la consulta/validación de certificados, los reportes y el escalamiento de fraude.
  
 ---
  
 ## 7. Vistas Arquitectónicas: Nivel de Infraestructura
  
 ### 7.1 Diagrama de despliegue
- 
+
+El diagrama de despliegue muestra cómo los servicios lógicos se distribuyen sobre la infraestructura física **on-premise del SICA** (RES-11), utilizando exclusivamente tecnologías **Open Source** (RES-07), y deja indicada la **migración a la nube en fases posteriores** mediante un nodo `<<future>>`.
+
+![Diagrama de Despliegue — On-premise SICA](documentación/entregablesFinales/UML%20ARQUITECTONICO/Diagrama%20Despliegue.svg)
+
+Nodos principales:
+
+- **`<<device>>` PC / Móvil (Usuarios):** Navegador / App (React + REST).
+- **`<<execution environment>>` Servidor de Borde:** Nginx + API Gateway (**Kong**), punto único de entrada vía HTTPS/REST.
+- **`<<execution environment>>` Servidor de Aplicaciones 1 (Spring Boot / Java):** Servicio Evaluación Adaptativa, Servicio Certificación (PKI/Blockchain – **Hyperledger Fabric**), Servicio Auditoría Anti-fraude.
+- **`<<execution environment>>` Servidor de Aplicaciones 2 (Spring Boot / Java + Python):** Servicio Integración Académica (**Keycloak** – LDAP/SAML/OAuth2), Servicio Analítica Regional (**Apache Superset**).
+- **`<<message broker>>` Servidor de Mensajería:** Bus de Eventos asíncrono (**Apache Kafka / RabbitMQ**).
+- **`<<db server>>` Servidor de Base de Datos:** **PostgreSQL** — BD Evaluación (OLTP) y BD Certificados (OLTP).
+- **`<<storage>>` Servidor de Almacenamiento:** Almacén de Evidencia (**MinIO**, objetos) y Repositorio OLAP (**ClickHouse**).
+- **`<<external>>`** Sistemas de Universidades (USAC, UCR, UES) y Ministerios / Secretaría SICA.
+- **`<<future>>` Nube Pública:** destino de la migración en fases posteriores.
+
 ### 7.2 Diagrama de componentes
- 
+
+El diagrama de componentes detalla los componentes de software y las **interfaces** que cada uno expone o consume.
+
+![Diagrama de Componentes](documentación/entregablesFinales/UML%20ARQUITECTONICO/Diagrama%20Componentes.svg)
+
+| Componente | Interfaces que expone |
+|---|---|
+| **Evaluación Adaptativa** | `IExamenAdaptativo`, `ICapturaEvidencia` |
+| **Certificación Regional** | `IEmisionCertificado`, `IVerificacionCertificado`, `IRevocacionCertificado` |
+| **Auditoría Anti-fraude** | `IDeteccionFraude`, `IReporteAuditoria`, `IDerechoAlOlvido` |
+| **Integración Académica** | `IAutenticacionFederada`, `ISincronizacionDatos`, `IGestionErrorIntegracion` |
+| **Analítica Regional** | `IDashboardAnalitico`, `IAnonimizacion` |
+| **Motor Criptográfico (PKI/Blockchain)** | servicios de firma y registro inmutable usados por Certificación |
+
+Componentes de soporte transversales: **Bus de Eventos** (publica/consume evidencia, eventos y ETL), **Bitácora Inmutable** (registra auditoría), **Almacén de Evidencia (frío)** y **Repositorio Analítico (OLAP)**. Las relaciones del diagrama (*usa*, *publica eventos*, *publica evidencia*, *registra*, *consume*, *consume (ETL)*, *lee*, *publica cambio de estado*, *consume (revocación)*) muestran cómo el bus de eventos desacopla a los productores de los consumidores.
+
 ### 7.3 Diagrama de distribución
- 
+
+El diagrama de distribución profundiza en los **nodos físicos, la red y los protocolos** de comunicación dentro del Data Center on-premise del SICA.
+
+![Diagrama de Distribución — Nodos, Red y Protocolos](documentación/entregablesFinales/UML%20ARQUITECTONICO/PRCCD_Diagrama_Distribucion.svg)
+
+Protocolos por enlace:
+
+| Enlace | Protocolo |
+|---|---|
+| Estación Cliente → Servidor de Borde | **HTTPS / TLS** |
+| Servidor de Borde → Servidores de Aplicaciones | **HTTP/REST (LAN)** |
+| Servicios → Servidor de Mensajería | **AMQP / Kafka** |
+| Servicios → Servidor de Base de Datos | **JDBC / TCP** |
+| Consumo de eventos / lectura OLAP | **TCP** |
+| Servicios → Nodo Ledger (Blockchain/PKI) | **gRPC / TLS** |
+| Sistemas Universidades → Integración | **LDAP / SAML / OAuth2 · JSON / XML / CSV (HTTPS)** |
+| Ministerios / Secretaría SICA | **HTTPS** (validación de certificados, reportes, escalamiento de fraude) |
+| Data Center → Nube Pública | **replicación futura** (fase posterior) |
+
 ### 7.4 Justificación de frameworks y tecnologías en relación a los drivers arquitectónicos
- 
+
+Todas las tecnologías seleccionadas son **Open Source** (RES-07) y desplegables **on-premise** con preparación para migrar a la nube (RES-11), respetando el presupuesto de USD 180,000 (RES-02).
+
+| Tecnología | Rol en la arquitectura | Drivers que satisface |
+|---|---|---|
+| **React + REST** | Capa de presentación (portales y app de evaluación) | EaC-18 (usabilidad de dashboards), EaC-04 (no retrasar el inicio de la evaluación) |
+| **Kong (API Gateway) + Nginx** | Punto único de entrada, enrutamiento y seguridad de borde | EaC-01/EaC-02 (escalabilidad y disponibilidad en picos), EaC-07 (TLS), EaC-14 (trazabilidad de accesos) |
+| **Spring Boot (Java)** | Contenedor de los servicios SOA | EaC-19 (modificabilidad), EaC-06 (rendimiento del examen adaptativo), RES-13 (equipos pequeños en paralelo) |
+| **Keycloak** | Autenticación federada multiprotocolo (LDAP/SAML/OAuth2) | RF-01, EaC-03 (interoperabilidad), RES-03, EaC-16 (tolerancia a fallos) |
+| **Hyperledger Fabric / PKI** | Emisión criptográfica e inmutabilidad de certificados | RF-06, RF-07, RF-08, EaC-11 (integridad), EaC-12 (verificabilidad), RES-08/RES-09 |
+| **Apache Kafka / RabbitMQ** | Bus de eventos asíncrono | RF-04, RF-15, EaC-10 (detección de fraude no intrusiva), EaC-13 (confiabilidad), EaC-16, EaC-17 (separar analítica de lo transaccional) |
+| **PostgreSQL (OLTP)** | Bases de datos transaccionales de evaluación y certificación | RF-03, RF-09/RF-10, EaC-07 (encriptación en reposo), EaC-13 |
+| **MinIO (objetos)** | Almacén de evidencia anti-fraude optimizado en costos | RF-04, EaC-08 (retención inalterable 5 años), EaC-09 (eficiencia de costos), RES-06/RES-10 |
+| **ClickHouse (OLAP)** | Repositorio analítico segregado | RF-17, RF-18, EaC-15 (privacidad/anonimización), EaC-17, EaC-18 |
+| **Apache Superset** | Dashboards analíticos regionales | RF-17, EaC-18 (comprensible para alta gerencia) |
+
 ---
  
 ## 8. Diseño de Datos
