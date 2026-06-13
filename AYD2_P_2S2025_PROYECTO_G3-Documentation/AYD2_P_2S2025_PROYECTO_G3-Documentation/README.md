@@ -121,23 +121,634 @@ La Plataforma Regional de Certificación de Competencias Digitales (PRCCD) permi
 ---
  
 ## 2. Características del sistema y Drivers Arquitectónicos
- 
+
 ### 2.a Listado de drivers RF (Requerimientos Funcionales)
- 
+
+| ID | Driver RF | Fuente en el enunciado |
+|---|---|---|
+| RF-01 | El sistema debe soportar autenticación federada interactuando con protocolos dispares (LDAP, SAML, OAuth2) según la institución educativa. | debe soportar autenticación federada interactuando con protocolos dispares (LDAP, SAML, OAuth2 según la institución) |
+| RF-02 | El sistema debe ingerir y exportar datos académicos en una variedad de formatos: JSON, XML y archivos planos CSV generados por sistemas heredados. | ser capaz de ingerir y exportar datos académicos en una variedad de formatos, que van desde flujos JSON o XML hasta la importación de archivos planos CSV |
+| RF-03 | El núcleo de la plataforma debe ser un motor de exámenes adaptativos, donde la dificultad y el flujo de las preguntas se ajusten en tiempo real según la precisión de las respuestas previas del candidato. | un motor activo de evaluación mediante exámenes adaptativos, donde la dificultad de las preguntas cambia en tiempo real según las respuestas previas |
+| RF-04 | El sistema debe capturar y almacenar evidencia concurrente para auditorías anti-fraude durante la evaluación, incluyendo capturas de pantalla, logs de tecleo y ráfagas de video ocasional. | debe capturar y almacenar evidencia concurrente para auditorías anti-fraude... telemetría variable como capturas de pantalla, logs de tecleo y ráfagas de video ocasional |
+| RF-05 | El sistema debe analizar la evidencia capturada para detectar patrones de comportamiento que indiquen fraude académico o alteración de notas. | rastro de auditoría inmutable... que prevengan el fraude académico o la alteración de notas a nivel de base de datos |
+| RF-06 | Los certificados digitales emitidos deben ser verificables criptográficamente, incorporando tecnologías de registros distribuidos (Blockchain/Hyperledger) o una Infraestructura de Llave Pública (PKI). | los certificados digitales emitidos deben ser verificables criptográficamente. La arquitectura deberá incorporar tecnologías de registros distribuidos, como redes Blockchain... o basarse en una Infraestructura de Llave Pública (PKI) |
+| RF-07 | El sistema debe mantener una bitácora inmutable que demuestre que ni la calificación ni la identidad del portador han sido alteradas desde el momento de la emisión. | mantener una bitácora inmutable que demuestre que ni la calificación ni la identidad del portador han sido alteradas desde el momento de la emisión |
+| RF-08 | Cada certificado emitido debe contar con un rastro de auditoría inmutable, respaldado por firmas electrónicas avanzadas. | los ministerios de trabajo y las direcciones financieras exigen que cada certificado emitido cuente con un rastro de auditoría inmutable, respaldado por firmas electrónicas avanzadas |
+| RF-09 | El sistema debe gestionar el proceso de reintento de evaluación, considerando el siguiente período de certificación disponible (primera semana del mes siguiente). | estos períodos de certificación se habilitarán exclusivamente durante la primera semana de cada mes (implica reintentos sujetos al mismo calendario) |
+| RF-10 | El sistema debe habilitar las evaluaciones de certificación exclusivamente durante la primera semana de cada mes. | el negocio dicta que estos períodos de certificación se habilitarán exclusivamente durante la primera semana de cada mes |
+| RF-11 | El sistema debe permitir la consulta y verificación de certificados emitidos por parte de entidades externas (universidades, ministerios). | garantizar la validez jurídica transfronteriza de las competencias (requiere mecanismo de consulta/verificación externa) |
+| RF-12 | El sistema debe permitir a auditores autorizados consultar la evidencia capturada por evaluación y generar reportes de auditoría. | garantizando que podamos auditar QUIÉN vio QUÉ dato y CUÁNDO, sin que nadie pueda evadirlo |
+| RF-13 | Ante un caso de fraude confirmado, el sistema debe bloquear el certificado asociado y notificar a la Secretaría General del SICA. | prevengan el fraude académico + necesidad oculta de auditoría inobjetable (impacto arquitectónico derivado) |
+| RF-14 | El sistema debe permitir a un titular ejercer su derecho al olvido, garantizando la anonimización o eliminación de sus datos personales conservando la trazabilidad legal del certificado. | cumplir simultáneamente con las leyes de protección de datos personales de diferentes países, garantizando el derecho al olvido |
+| RF-15 | El sistema debe recibir notificaciones de cambio en el estado académico de un estudiante y evaluar su impacto sobre certificados vigentes. | Derivado de la interoperabilidad nativa con universidades y de la necesidad de mantener válidos solo los certificados correctos. |
+| RF-16 | El sistema debe ejecutar un proceso de revocación de certificados, registrando la revocación de forma inmutable y notificando al titular. | Derivado de RF-07/RF-08 (bitácora inmutable) aplicado al ciclo de vida del certificado. |
+| RF-17 | El sistema debe alimentar dashboards analíticos que permitan a la alta gerencia visualizar el estado de las competencias digitales segmentado por país, carrera universitaria y género. | el sistema debe alimentar dashboards analíticos que permitan a la alta gerencia visualizar el estado de las competencias digitales en la región, segmentando la información específicamente por país, carrera universitaria y género |
+| RF-18 | La capa de datos debe ejecutar procesos rigurosos de agregación y anonimización antes de exponer las métricas a las interfaces gerenciales. | la capa de datos deberá ejecutar procesos rigurosos de agregación y anonimización antes de exponer las métricas a las interfaces gerenciales |
+| RF-19 | El sistema debe transformar y normalizar los datos académicos recibidos de las universidades al modelo de datos interno de la plataforma. | Derivado de RF-02 (formatos dispares) y de la necesidad de un modelo unificado para evaluación y analítica. |
+| RF-20 | El sistema debe registrar y notificar errores de integración con los sistemas universitarios al administrador TI correspondiente. | Derivado de cada institución opera como un silo tecnológico y de la necesidad operativa de soporte ante fallos de integración. |
+
+---
+
 ### 2.b Listado de drivers EaC (Escenarios de Atributos de Calidad)
- 
+
+| ID | Atributo de Calidad | Descripción | Fuente en el enunciado |
+|---|---|---|---|
+| EaC-01 | Escalabilidad | El sistema debe soportar picos de tráfico agresivos con miles de usuarios simultáneos durante la primera semana de cada mes, sin degradación del servicio. | generará picos de tráfico agresivos con miles de usuarios simultáneos que el sistema debe soportar sin degradación del servicio |
+| EaC-02 | Disponibilidad | El sistema debe mantenerse operativo durante los períodos de certificación, especialmente bajo los picos de carga concentrados. | Derivado del carácter urgente y masivo de los períodos de certificación. |
+| EaC-03 | Interoperabilidad | El sistema debe integrarse nativamente con los sistemas heredados de al menos tres universidades pilares (USAC, UCR, UES), cada una con protocolos de autenticación distintos, sin obligarlas a cambiar su forma de trabajar. | diseñar una solución que se integre nativamente con los sistemas de al menos tres universidades pilares... sin obligar a las instituciones educativas a cambiar su forma de trabajar |
+| EaC-04 | Rendimiento (autenticación) | La autenticación federada con las universidades debe resolverse en un tiempo que no retrase perceptiblemente el inicio de la evaluación. | Implícito en la necesidad de soportar miles de usuarios simultáneos al inicio de cada período. |
+| EaC-05 | Interoperabilidad de datos | El sistema debe procesar datos académicos en formatos heterogéneos (JSON, XML, CSV) provenientes de sistemas más antiguos. | exponiendo o consumiendo datos en formatos totalmente dispares, desde JSON y XML hasta exportaciones manuales en archivos planos CSV |
+| EaC-06 | Rendimiento (examen adaptativo) | El ajuste de dificultad del examen debe calcularse en tiempo real, sin demoras perceptibles entre preguntas. | la dificultad de las preguntas cambia en tiempo real según las respuestas previas del usuario |
+| EaC-07 | Seguridad | El sistema debe garantizar la encriptación de datos sensibles en reposo y en tránsito, y restringir el acceso a evidencia biométrica y de comportamiento. | garantizando el derecho al olvido y la encriptación de datos sensibles en reposo y en tránsito |
+| EaC-08 | Durabilidad / Persistencia | La evidencia de evaluación (telemetría, capturas, video) debe conservarse de forma inalterable durante un período de 5 años. | garantizando una retención inalterable por un período de 5 años para cumplir con el GDPR y legislaciones locales |
+| EaC-09 | Eficiencia de costos (almacenamiento) | El almacenamiento de la evidencia biométrica y de comportamiento debe ser altamente seguro y optimizado en costos, dada su alta volumetría. | exigirá un almacenamiento altamente seguro y optimizado en costos |
+| EaC-10 | Rendimiento (detección de fraude) | La detección de patrones sospechosos debe ejecutarse durante la evaluación sin interrumpir la experiencia del candidato. | Derivado de evidencia concurrente para auditorías anti-fraude durante la evaluación. |
+| EaC-11 | Integridad | Los certificados, reportes de auditoría y revocaciones deben permanecer inalterables desde su emisión/registro. | mantener una bitácora inmutable que demuestre que ni la calificación ni la identidad del portador han sido alteradas |
+| EaC-12 | Verificabilidad | Cualquier entidad autorizada debe poder verificar la validez de un certificado de forma rápida y confiable. | garantizar la validez jurídica transfronteriza de las competencias |
+| EaC-13 | Confiabilidad | Las sincronizaciones de datos académicos no deben perder información ni generar duplicados ante reintentos o fallos parciales. | Derivado de la heterogeneidad de los sistemas universitarios y la tolerancia a fallos exigida. |
+| EaC-14 | Trazabilidad | El sistema debe permitir auditar quién accedió a qué dato, cuándo y con qué propósito, sin posibilidad de evasión. | garantizando que podamos auditar QUIÉN vio QUÉ dato y CUÁNDO, sin que nadie pueda evadirlo |
+| EaC-15 | Privacidad | Los datos personales deben anonimizarse y agregarse antes de su exposición en dashboards, y debe respetarse el derecho al olvido sin romper la cadena de auditoría. | la capa de datos deberá ejecutar procesos rigurosos de agregación y anonimización antes de exponer las métricas |
+| EaC-16 | Tolerancia a fallos | El sistema debe operar de forma confiable ante la heterogeneidad y posibles fallos de los sistemas universitarios externos. | Derivado de cada institución opera como un silo tecnológico con ecosistema altamente fragmentado. |
+| EaC-17 | Rendimiento de analítica | La generación de reportes y dashboards analíticos no debe afectar el rendimiento de las operaciones transaccionales de evaluación. | Derivado de la necesidad de separar el comportamiento transaccional (evaluación) del analítico (dashboards). |
+| EaC-18 | Usabilidad | Los dashboards analíticos deben ser comprensibles para la alta gerencia, sin requerir conocimiento técnico. | permitan a la alta gerencia visualizar el estado de las competencias digitales en la región |
+| EaC-19 | Modificabilidad / Extensibilidad | La arquitectura debe permitir incorporar nuevas universidades, protocolos o tipos de certificación sin rediseño completo. | Derivado del carácter regional y de crecimiento esperado del SICA (3+ universidades pilares, al menos). |
+
+---
+
 ### 2.c Listado de drivers de Restricción (tecnológicos, normativos y operativos)
- 
+
+| ID | Tipo | Descripción | Fuente en el enunciado |
+|---|---|---|---|
+| RES-01 | Operativa | Los períodos de certificación se habilitan exclusivamente durante la primera semana de cada mes. | el negocio dicta que estos períodos de certificación se habilitarán exclusivamente durante la primera semana de cada mes |
+| RES-02 | Presupuesto | El presupuesto máximo aprobado para el piloto es de USD 180,000, incluyendo cómputo, almacenamiento, transferencia y servicios gestionados. | La dirección financiera ha aprobado un presupuesto máximo de USD 180,000 para el piloto |
+| RES-03 | Tecnológica | Cada universidad pilar (USAC, UCR, UES) opera con un protocolo de autenticación distinto (LDAP, SAML, OAuth2). | poseyendo distintos protocolos de autenticación (LDAP, SAML, OAuth2) |
+| RES-04 | Normativa | La plataforma debe cumplir simultáneamente con las leyes de protección de datos personales de distintos países, incluyendo el derecho al olvido. | deberá cumplir simultáneamente con las leyes de protección de datos personales de diferentes países, garantizando el derecho al olvido |
+| RES-05 | Tecnológica | Los formatos de intercambio de datos académicos son heterogéneos: JSON, XML y archivos planos CSV de sistemas más antiguos. | exponiendo o consumiendo datos en formatos totalmente dispares, desde JSON y XML hasta exportaciones manuales en archivos planos CSV |
+| RES-06 | Normativa | La plataforma debe cumplir con el GDPR y con legislaciones locales como la Ley de Acceso a la Información Pública de Guatemala. | garantizando una retención inalterable por un período de 5 años para cumplir con el GDPR y legislaciones locales como la Ley de Acceso a la Información Pública de Guatemala |
+| RES-07 | Tecnológica / Económica | Debe priorizarse el uso de tecnologías Open Source para optimizar costos de licenciamiento. | obligando a priorizar el uso de tecnologías Open Source y a optimizar los costos de licenciamiento |
+| RES-08 | Normativa | Los certificados deben tener validez jurídica transfronteriza dentro de los países que conforman el SICA. | garantizar la validez jurídica transfronteriza de las competencias |
+| RES-09 | Normativa | Cada certificado y cada acción de auditoría debe respaldarse con firmas electrónicas avanzadas y registrarse en una bitácora inmutable. | respaldado por firmas electrónicas avanzadas que prevengan el fraude académico o la alteración de notas |
+| RES-10 | Normativa | Los datos sensibles deben encriptarse tanto en reposo como en tránsito. | la encriptación de datos sensibles en reposo y en tránsito |
+| RES-11 | Tecnológica / Operativa | La primera versión del sistema debe desplegarse on-premise, reutilizando servidores físicos e infraestructura existente del SICA, pero preparada para una migración transparente a la nube en fases posteriores. | la primera versión del sistema debe desplegarse en soluciones on-premise, reutilizando servidores físicos e infraestructura existente del SICA... la arquitectura diseñada debe estar intrínsecamente preparada para una migración transparente hacia la nube |
+| RES-12 | Temporal | La primera versión arquitectónica debe quedar completamente definida, justificada y documentada en un plazo máximo de tres a cuatro semanas. | la presión política exige que la primera versión arquitectónica esté completamente definida, justificada y documentada en un plazo máximo de tres a cuatro semanas |
+| RES-13 | Operativa | El SICA cuenta con capacidades técnicas heterogéneas, personal de soporte limitado y un ecosistema de software base altamente fragmentado. | el SICA no es un gigante tecnológico; es una entidad regional con capacidades técnicas heterogéneas, personal de soporte limitado y un ecosistema de software base altamente fragmentado |
+
+---
+
 ### 2.d Descripción de características principales de la PRCCD (priorizadas por impacto en el negocio)
- 
+
+| Prioridad | Característica | Justificación del impacto en el negocio |
+|---|---|---|
+| 1 | **Motor de evaluación adaptativa con captura de evidencia anti-fraude** | Es el núcleo operativo descrito en el enunciado (no será un simple repositorio de diplomas, sino un motor activo de evaluación). Sin esto no hay producto: es lo que diferencia al PRCCD de un sistema de certificación tradicional y es donde se concentra el pico de carga del negocio (miles de usuarios en la primera semana de cada mes). |
+| 2 | **Certificación digital con validez jurídica transfronteriza (criptográfica e inmutable)** | Es la promesa de valor regional del SICA: sin validez transfronteriza verificable, el certificado no vale más que una imagen. Es exigido simultáneamente por ministerios de trabajo, direcciones financieras y por la necesidad de unificar la región. |
+| 3 | **Interoperabilidad con sistemas heredados de las universidades (autenticación federada y formatos dispares)** | Es la condición sin la cual el SICA no logra su objetivo político de unificar la región sin obligar a las instituciones a cambiar su forma de trabajar. Es también el mayor riesgo técnico identificado explícitamente (cada institución opera como un silo tecnológico). |
+| 4 | **Cumplimiento normativo multinacional (protección de datos, derecho al olvido, encriptación, auditoría inmutable)** | Es un imperativo estricto declarado por el enunciado para una entidad que actúa a nivel multinacional; su incumplimiento implica riesgo legal y penal explícito, por lo que condiciona el diseño de toda la capa de datos. |
+| 5 | **Analítica regional con datos agregados y anonimizados para la toma de decisiones** | Es el valor estratégico de la plataforma para los ministerios de educación y trabajo (inteligencia de negocio). Tiene menor urgencia operativa que las anteriores (puede ejecutarse de forma diferida/batch), pero es la razón por la que la alta dirección política impulsa el proyecto. |
+| 6 | **Despliegue on-premise con preparación para migración a la nube, bajo presupuesto Open Source de USD 180,000** | Condiciona TODAS las decisiones tecnológicas anteriores, pero no es una característica de negocio en sí misma — es la restricción de viabilidad bajo la cual deben implementarse las características 1 a 5. |
+
 ---
  
 ## 3. Diagramas de CDU Expandidos
- 
+
 ### 3.a Diagrama de casos de uso expandidos del sistema
- 
+
+![Diagrama de Casos de Uso Expandidos](documentación/entregablesFinales/CDUS/DiagramaCasosDeUsoExpandido.png)
+
+---
+
 ### 3.b Detalle de drivers RF, EaC y de Restricción asociados a cada CDU
- 
+
+---
+
+#### Expandido 1: Gestionar evaluación adaptativa
+
+##### CDUE-00 — Gestionar evaluación adaptativa (CDU base)
+
+**Drivers RF:**
+- RF-03: Motor de exámenes adaptativos con ajuste de dificultad en tiempo real.
+- RF-10: Habilitación de evaluaciones exclusivamente en la primera semana de cada mes.
+
+**Drivers EaC:**
+- EaC-01: Escalabilidad — soportar miles de usuarios simultáneos durante la primera semana de cada mes sin degradación del servicio.
+- EaC-02: Disponibilidad — el sistema debe mantenerse operativo durante los períodos de certificación sin interrupciones.
+
+**Drivers de Restricción:**
+- RES-01: (Operativa) Las evaluaciones solo se habilitan la primera semana de cada mes (regla de negocio del SICA).
+- RES-02: (Presupuesto) Presupuesto máximo de USD 180,000 para el piloto.
+
+---
+
+##### CDUE-01 — Validar identidad federada del candidato
+
+**Drivers RF:**
+- RF-01: Autenticación federada multi-protocolo (LDAP, SAML, OAuth2) con las universidades pilares.
+- RF-02: Sincronización e ingesta de datos académicos en formatos dispares (JSON, XML, CSV).
+
+**Drivers EaC:**
+- EaC-03: Interoperabilidad — interactuar con protocolos dispares sin requerir que las universidades cambien su forma de trabajar.
+- EaC-04: Rendimiento (autenticación) — la autenticación debe completarse en pocos segundos.
+
+**Drivers de Restricción:**
+- RES-03: (Tecnológica) Cada universidad pilar usa un protocolo distinto (USAC: LDAP, UCR: SAML, UES: OAuth2).
+- RES-04: (Normativa) Cumplimiento con leyes de protección de datos personales de cada país al transmitir credenciales.
+
+---
+
+##### CDUE-02 — Sincronizar datos académicos
+
+**Drivers RF:**
+- RF-02: Sincronización e ingesta de datos académicos en formatos dispares (JSON, XML, CSV).
+- RF-19: Transformación y normalización de datos académicos al modelo interno de la plataforma.
+
+**Drivers EaC:**
+- EaC-05: Interoperabilidad (datos) — procesar desde APIs modernas (JSON) hasta exportaciones manuales (CSV).
+
+**Drivers de Restricción:**
+- RES-05: (Tecnológica) Los datos académicos de las universidades vienen en formatos heterogéneos.
+
+---
+
+##### CDUE-03 — Aplicar examen adaptativo
+
+**Drivers RF:**
+- RF-03: Motor de exámenes adaptativos con ajuste de dificultad en tiempo real.
+
+**Drivers EaC:**
+- EaC-06: Rendimiento (examen) — el ajuste de dificultad debe calcularse en tiempo real sin demora perceptible entre preguntas.
+- EaC-01: Escalabilidad — soportar miles de evaluaciones concurrentes durante los picos.
+
+**Drivers de Restricción:**
+- (Ninguna restricción adicional específica a este CDU.)
+
+---
+
+##### CDUE-04 — Capturar evidencia antifraude
+
+**Drivers RF:**
+- RF-04: Captura concurrente de evidencia antifraude (pantalla, logs de tecleo, ráfagas de video).
+
+**Drivers EaC:**
+- EaC-07: Seguridad — la evidencia biométrica y de comportamiento debe almacenarse de forma altamente segura.
+- EaC-08: Durabilidad / Persistencia — retención inalterable por un período de 5 años.
+- EaC-09: Eficiencia de costos — almacenamiento optimizado en costos dada la alta volumetría.
+
+**Drivers de Restricción:**
+- RES-06: (Normativa) Cumplir con el GDPR y con la Ley de Acceso a la Información Pública de Guatemala.
+- RES-07: (Tecnológica) Priorizar tecnologías Open Source para optimizar costos de licenciamiento.
+
+---
+
+##### CDUE-05 — Registrar evento sospechoso
+
+**Drivers RF:**
+- RF-05: Detección de patrones de comportamiento sospechoso durante la evaluación.
+
+**Drivers EaC:**
+- EaC-10: Rendimiento (detección) — la detección debe ejecutarse en tiempo real sin interrumpir la evaluación en curso.
+
+**Drivers de Restricción:**
+- (Ninguna restricción adicional específica.)
+
+---
+
+##### CDUE-06 — Emitir credencial digital
+
+**Drivers RF:**
+- RF-06: Emisión de certificados digitales verificables criptográficamente (PKI / blockchain).
+- RF-07: Registro en bitácora inmutable.
+- RF-08: Firma electrónica avanzada en certificados.
+
+**Drivers EaC:**
+- EaC-11: Integridad — garantizar que ni la calificación ni la identidad del portador puedan alterarse.
+- EaC-12: Verificabilidad — cualquier entidad debe poder verificar un certificado en pocos segundos.
+
+**Drivers de Restricción:**
+- RES-08: (Normativa) Los certificados deben tener validez jurídica transfronteriza dentro de los países del SICA.
+- RES-09: (Normativa) Rastro de auditoría inmutable respaldado por firmas electrónicas avanzadas.
+
+---
+
+##### CDUE-07 — Gestionar proceso de reintento
+
+**Drivers RF:**
+- RF-09: Gestión de proceso de reintento (notificación, habilitación o bloqueo).
+
+**Drivers EaC:**
+- (Ningún EaC crítico adicional específico.)
+
+**Drivers de Restricción:**
+- RES-01: (Operativa) Los reintentos solo pueden ocurrir en la primera semana del siguiente mes.
+
+---
+
+##### CDUE-08 — Bloquear reintento por fraude
+
+**Drivers RF:**
+- RF-09: Gestión de proceso de reintento (notificación, habilitación o bloqueo).
+- RF-13: Escalamiento de caso por fraude confirmado (bloqueo de certificado + notificación a Secretaría SICA).
+
+**Drivers EaC:**
+- EaC-07: Seguridad — el bloqueo debe aplicarse de forma inmediata e inviolable.
+
+**Drivers de Restricción:**
+- (Ninguna restricción adicional específica.)
+
+---
+
+##### CDUE-09 — Habilitar reintento (si no hay fraude)
+
+**Drivers RF:**
+- RF-09: Gestión de proceso de reintento (notificación, habilitación o bloqueo).
+
+**Drivers EaC:**
+- (Ningún EaC crítico adicional específico.)
+
+**Drivers de Restricción:**
+- RES-01: (Operativa) La habilitación debe quedar registrada antes de la apertura del siguiente período.
+
+---
+
+#### Expandido 2: Gestión de certificados regionales
+
+##### CDUE-10 — Gestión de certificados regionales (CDU base)
+
+**Drivers RF:**
+- RF-06: Emisión de certificados digitales verificables criptográficamente (PKI / blockchain).
+- RF-11: Consulta y verificación de autenticidad de certificados emitidos.
+
+**Drivers EaC:**
+- EaC-11: Integridad — los certificados no pueden alterarse después de emitidos.
+- EaC-12: Verificabilidad — respuesta de validación en pocos segundos.
+
+**Drivers de Restricción:**
+- RES-08: (Normativa) Validez jurídica transfronteriza.
+- RES-09: (Normativa) Rastro de auditoría inmutable con firmas electrónicas avanzadas.
+
+---
+
+##### CDUE-11 — Autenticar conexión institucional
+
+**Drivers RF:**
+- RF-01: Autenticación federada multi-protocolo (LDAP, SAML, OAuth2).
+
+**Drivers EaC:**
+- EaC-03: Interoperabilidad — soportar los diferentes protocolos de cada institución.
+- EaC-07: Seguridad — garantizar que solo entidades autorizadas accedan a la información.
+
+**Drivers de Restricción:**
+- RES-03: (Tecnológica) Protocolos heterogéneos (LDAP, SAML, OAuth2).
+
+---
+
+##### CDUE-12 — Sincronizar historial académico del estudiante
+
+**Drivers RF:**
+- RF-02: Sincronización e ingesta de datos académicos en formatos dispares (JSON, XML, CSV).
+- RF-19: Transformación y normalización de datos académicos al modelo interno.
+
+**Drivers EaC:**
+- EaC-05: Interoperabilidad (datos) — formatos dispares.
+
+**Drivers de Restricción:**
+- RES-05: (Tecnológica) Formatos heterogéneos de datos académicos.
+
+---
+
+##### CDUE-13 — Consultar certificados emitidos a sus estudiantes
+
+**Drivers RF:**
+- RF-11: Consulta y verificación de autenticidad de certificados emitidos.
+
+**Drivers EaC:**
+- EaC-12: Verificabilidad — respuesta rápida.
+- EaC-07: Seguridad — aislamiento de datos por institución.
+
+**Drivers de Restricción:**
+- RES-04: (Normativa) Protección de datos personales; aislamiento por institución.
+
+---
+
+##### CDUE-14 — Notificar cambio en estado académico del estudiante
+
+**Drivers RF:**
+- RF-15: Notificación de cambio en estado académico y evaluación de impacto sobre certificados vigentes.
+
+**Drivers EaC:**
+- EaC-13: Confiabilidad — los cambios no deben perderse ni procesarse duplicados.
+
+**Drivers de Restricción:**
+- (Ninguna restricción adicional específica.)
+
+---
+
+##### CDUE-15 — Gestionar revocación de certificado
+
+**Drivers RF:**
+- RF-06: Emisión de certificados digitales verificables criptográficamente (gestión del ciclo de vida).
+- RF-15: Notificación de cambio en estado académico y evaluación de impacto.
+
+**Drivers EaC:**
+- EaC-11: Integridad — la revocación debe registrarse en la bitácora inmutable.
+
+**Drivers de Restricción:**
+- RES-09: (Normativa) El rastro de revocación debe ser inalterable.
+
+---
+
+##### CDUE-16 — Iniciar proceso de revocación de certificado
+
+**Drivers RF:**
+- RF-16: Proceso de revocación de certificado con registro inmutable y notificación al titular.
+- RF-07: Registro en bitácora inmutable.
+- RF-08: Firma electrónica avanzada.
+
+**Drivers EaC:**
+- EaC-11: Integridad — la revocación queda registrada inmutablemente.
+- EaC-14: Trazabilidad — auditar quién, cuándo y por qué se revocó.
+
+**Drivers de Restricción:**
+- RES-09: (Normativa) Firmas electrónicas avanzadas en el registro de revocación.
+
+---
+
+#### Expandido 3: Gestionar auditorías y evidencia anti-fraude
+
+##### CDUE-17 — Gestionar auditorías y evidencia anti-fraude (CDU base)
+
+**Drivers RF:**
+- RF-12: Gestión de auditorías con consulta de evidencia y generación de reportes inmutables.
+
+**Drivers EaC:**
+- EaC-14: Trazabilidad — auditar quién vio qué dato y cuándo, sin que nadie pueda evadirlo.
+- EaC-08: Durabilidad — retención de evidencia por 5 años.
+
+**Drivers de Restricción:**
+- RES-06: (Normativa) GDPR y Ley de Acceso a la Información Pública de Guatemala.
+
+---
+
+##### CDUE-18 — Autenticar y autorizar auditor
+
+**Drivers RF:**
+- RF-01: Autenticación federada multi-protocolo (aplicada al rol de auditor).
+
+**Drivers EaC:**
+- EaC-07: Seguridad — solo personal autorizado puede acceder a evidencia sensible.
+
+**Drivers de Restricción:**
+- (Ninguna restricción adicional específica.)
+
+---
+
+##### CDUE-19 — Consultar evidencia capturada por evaluación
+
+**Drivers RF:**
+- RF-12: Gestión de auditorías con consulta de evidencia y generación de reportes inmutables.
+
+**Drivers EaC:**
+- EaC-08: Durabilidad — evidencia inalterable por 5 años.
+- EaC-11: Integridad — verificar que la evidencia no ha sido modificada desde su captura.
+
+**Drivers de Restricción:**
+- RES-06: (Normativa) Retención conforme a GDPR y legislación local.
+
+---
+
+##### CDUE-20 — Detectar patrones sospechosos
+
+**Drivers RF:**
+- RF-05: Detección de patrones de comportamiento sospechoso.
+
+**Drivers EaC:**
+- EaC-10: Rendimiento (detección) — el análisis debe ser eficiente.
+
+**Drivers de Restricción:**
+- (Ninguna restricción adicional específica.)
+
+---
+
+##### CDUE-21 — Generar reporte de auditoría
+
+**Drivers RF:**
+- RF-12: Gestión de auditorías con consulta de evidencia y generación de reportes inmutables.
+- RF-07: Registro en bitácora inmutable.
+- RF-08: Firma electrónica avanzada en reportes.
+
+**Drivers EaC:**
+- EaC-14: Trazabilidad — cada reporte debe ser rastreable e inalterable.
+- EaC-11: Integridad — la firma electrónica previene alteraciones.
+
+**Drivers de Restricción:**
+- RES-09: (Normativa) Firmas electrónicas avanzadas obligatorias en reportes de auditoría.
+
+---
+
+##### CDUE-22 — Escalar caso como fraude confirmado
+
+**Drivers RF:**
+- RF-13: Escalamiento de caso por fraude confirmado (bloqueo de certificado + notificación a Secretaría SICA).
+- RF-07: Registro en bitácora inmutable.
+
+**Drivers EaC:**
+- EaC-07: Seguridad — el bloqueo debe ser inmediato e irreversible hasta resolución.
+
+**Drivers de Restricción:**
+- RES-09: (Normativa) El bloqueo y la notificación deben quedar registrados inmutablemente.
+
+---
+
+##### CDUE-23 — Gestionar derecho al olvido
+
+**Drivers RF:**
+- RF-14: Gestión del derecho al olvido (anonimización/eliminación conservando trazabilidad legal).
+
+**Drivers EaC:**
+- EaC-15: Privacidad — garantizar el derecho al olvido sin romper la cadena de auditoría.
+- EaC-07: Seguridad — encriptación de datos sensibles en reposo y en tránsito.
+
+**Drivers de Restricción:**
+- RES-06: (Normativa) GDPR (derecho al olvido) y leyes locales de protección de datos.
+- RES-10: (Normativa) Encriptación de datos sensibles en reposo y en tránsito.
+
+---
+
+#### Expandido 4: Integrar información académica con universidades
+
+##### CDUE-24 — Integrar información académica con universidades (CDU base)
+
+**Drivers RF:**
+- RF-01: Autenticación federada multi-protocolo (LDAP, SAML, OAuth2).
+- RF-02: Sincronización e ingesta de datos académicos en formatos dispares (JSON, XML, CSV).
+
+**Drivers EaC:**
+- EaC-03: Interoperabilidad — integración sin que las universidades cambien su forma de trabajar.
+- EaC-16: Tolerancia a fallos — tolerar fallos temporales de red en las integraciones sin perder datos.
+
+**Drivers de Restricción:**
+- RES-03: (Tecnológica) Protocolos heterogéneos (LDAP, SAML, OAuth2).
+- RES-05: (Tecnológica) Formatos de datos dispares (JSON, XML, CSV).
+
+---
+
+##### CDUE-25 — Negociar protocolo de integración
+
+**Drivers RF:**
+- RF-01: Autenticación federada multi-protocolo (detección automática del protocolo de cada universidad).
+
+**Drivers EaC:**
+- EaC-03: Interoperabilidad — manejar múltiples protocolos de forma transparente.
+
+**Drivers de Restricción:**
+- RES-03: (Tecnológica) Cada universidad usa un protocolo distinto.
+
+---
+
+##### CDUE-26 — Establecer autenticación federada
+
+**Drivers RF:**
+- RF-01: Autenticación federada multi-protocolo.
+
+**Drivers EaC:**
+- EaC-04: Rendimiento (autenticación) — la autenticación no debe retrasar el flujo.
+- EaC-07: Seguridad — transmisión segura de credenciales entre sistemas.
+
+**Drivers de Restricción:**
+- RES-04: (Normativa) Protección de datos personales al transmitir credenciales entre países.
+
+---
+
+##### CDUE-27 — Ingerir y exportar datos académicos
+
+**Drivers RF:**
+- RF-02: Sincronización e ingesta de datos académicos en formatos dispares (JSON, XML, CSV).
+
+**Drivers EaC:**
+- EaC-05: Interoperabilidad (datos) — procesar desde APIs modernas hasta exportaciones CSV manuales.
+
+**Drivers de Restricción:**
+- RES-05: (Tecnológica) Formatos heterogéneos.
+
+---
+
+##### CDUE-28 — Validar y transformar formato de datos
+
+**Drivers RF:**
+- RF-19: Transformación y normalización de datos académicos al modelo interno de la plataforma.
+
+**Drivers EaC:**
+- EaC-13: Confiabilidad — rechazar datos malformados sin perder los válidos.
+
+**Drivers de Restricción:**
+- (Ninguna restricción adicional específica.)
+
+---
+
+##### CDUE-29 — Gestionar error de integración
+
+**Drivers RF:**
+- RF-20: Gestión de errores de integración con notificación al administrador TI universitario.
+
+**Drivers EaC:**
+- EaC-16: Tolerancia a fallos — los errores de integración no deben tumbar el sistema ni perder datos.
+
+**Drivers de Restricción:**
+- (Ninguna restricción adicional específica.)
+
+---
+
+#### Expandido 5: Analítica regional de competencias
+
+##### CDUE-30 — Analítica regional de competencias (CDU base)
+
+**Drivers RF:**
+- RF-17: Dashboards analíticos con métricas segmentadas por país, carrera y género.
+- RF-18: Agregación y anonimización de datos antes de exposición a interfaces gerenciales.
+
+**Drivers EaC:**
+- EaC-15: Privacidad — los datos deben pasar por agregación y anonimización antes de exponerse.
+- EaC-17: Rendimiento (analítica) — la ejecución no debe afectar el rendimiento de las operaciones transaccionales.
+
+**Drivers de Restricción:**
+- RES-06: (Normativa) Cumplimiento con leyes de protección de datos de múltiples países.
+
+---
+
+##### CDUE-31 — Recopilar datos de evaluaciones y certificaciones
+
+**Drivers RF:**
+- RF-17: Dashboards analíticos con métricas segmentadas (la recopilación es el insumo).
+
+**Drivers EaC:**
+- EaC-17: Rendimiento (analítica) — la recopilación no debe impactar las operaciones transaccionales (separación OLTP/OLAP).
+
+**Drivers de Restricción:**
+- (Ninguna restricción adicional específica.)
+
+---
+
+##### CDUE-32 — Ejecutar agregación y anonimización
+
+**Drivers RF:**
+- RF-18: Agregación y anonimización de datos antes de exposición a interfaces gerenciales.
+
+**Drivers EaC:**
+- EaC-15: Privacidad — ningún dato personal identificable puede llegar a los dashboards.
+
+**Drivers de Restricción:**
+- RES-06: (Normativa) GDPR y leyes locales de protección de datos.
+
+---
+
+##### CDUE-33 — Segmentar información (país, carrera, género)
+
+**Drivers RF:**
+- RF-17: Dashboards analíticos con métricas segmentadas por país, carrera y género.
+
+**Drivers EaC:**
+- (Ningún EaC adicional específico.)
+
+**Drivers de Restricción:**
+- (Ninguna restricción adicional específica.)
+
+---
+
+##### CDUE-34 — Exponer métricas en dashboards gerenciales
+
+**Drivers RF:**
+- RF-17: Dashboards analíticos con métricas segmentadas por país, carrera y género.
+
+**Drivers EaC:**
+- EaC-18: Usabilidad — los dashboards deben ser intuitivos para la alta gerencia.
+
+**Drivers de Restricción:**
+- (Ninguna restricción adicional específica.)
+
+---
+
+##### CDUE-35 — Bloquear exposición por fallo de anonimización
+
+**Drivers RF:**
+- RF-18: Agregación y anonimización de datos antes de exposición (rama de fallo).
+
+**Drivers EaC:**
+- EaC-15: Privacidad — protección ante fallos del proceso de anonimización.
+
+**Drivers de Restricción:**
+- RES-06: (Normativa) Infringir la normativa acarrea sanciones legales.
+
+---
+
+##### CDUE-36 — Configurar alertas por indicador clave
+
+**Drivers RF:**
+- RF-17: Dashboards analíticos con métricas segmentadas (extensión de alertas).
+
+**Drivers EaC:**
+- (Ningún EaC adicional específico.)
+
+**Drivers de Restricción:**
+- (Ninguna restricción adicional específica.)
+
 ---
  
 ## 4. Matrices de Trazabilidad
@@ -218,19 +829,101 @@ La combinación de **arquitectura en capas con orientación a servicios**, compl
 ## 6. Vistas Arquitectónicas: Nivel de Sistema
  
 ### 6.1 Diagrama de bloques de la arquitectura de software
+
+El diagrama de bloques representa la **vista lógica de alto nivel** de la PRCCD, organizada según el estilo seleccionado: **arquitectura en capas combinada con orientación a servicios (SOA)** y un **bus de eventos** para los flujos asíncronos.
+
+![Diagrama de Bloques — Vista Lógica de Alto Nivel](documentación/entregablesFinales/UML%20ARQUITECTONICO/Diagrama_Bloques.svg)
+
+La arquitectura se descompone en cinco capas, más los actores externos:
+
+| Capa | Bloques que la componen | Responsabilidad |
+|---|---|---|
+| **Presentación** | Portal Web Estudiantes/Profesionales, Portal Auditores/Administradores SICA, Portal Consulta Universidades/Ministerios | Exponer la operación, la auditoría y la consulta/verificación a cada tipo de usuario. |
+| **Servicios (SOA)** | Servicio de Evaluación Adaptativa, Servicio de Certificación Regional, Servicio de Auditoría Anti-fraude, Servicio de Integración Académica, Servicio de Analítica Regional | Cada servicio corresponde a uno de los cinco procesos de negocio de la primera descomposición del Core; son independientes y escalables por separado. |
+| **Lógica de Negocio** | Motor de Exámenes Adaptativos, Motor de Emisión Criptográfica (PKI/Blockchain), Motor de Detección de Fraude, Orquestador de Reglas de Negocio | Concentra las reglas de negocio de cada servicio. |
+| **Integración** | Adaptador LDAP/SAML/OAuth2 (USAC, UCR, UES), Pasarela de Formatos (JSON/XML/CSV) | Aísla la heterogeneidad de protocolos y formatos de las universidades; implementa el patrón **Adapter**. |
+| **Datos** | BD Evaluación (OLTP), BD Certificados (OLTP), Almacén de Evidencia (optimizado en costo), Ledger Blockchain/PKI (inmutable), Repositorio Analítico (OLAP) | Separa el almacenamiento transaccional, la evidencia de alta volumetría, la bitácora inmutable y el repositorio analítico. |
+
+Atravesando las capas de servicios y datos se ubica el **Bus de Eventos (asíncrono)**, que transporta evidencia anti-fraude, notificaciones, cambios de estado académico y el ETL hacia la analítica, desacoplando los flujos que no requieren respuesta inmediata.
+
+Los actores externos —**Universidades (USAC, UCR, UES)**, **Ministerios de Educación, Trabajo y Financieras** y **Secretaría General del SICA**— interactúan con el sistema a través de la capa de integración (LDAP/SAML/OAuth2, JSON/XML/CSV), la consulta/validación de certificados, los reportes y el escalamiento de fraude.
  
 ---
  
 ## 7. Vistas Arquitectónicas: Nivel de Infraestructura
  
 ### 7.1 Diagrama de despliegue
- 
+
+El diagrama de despliegue muestra cómo los servicios lógicos se distribuyen sobre la infraestructura física **on-premise del SICA** (RES-11), utilizando exclusivamente tecnologías **Open Source** (RES-07), y deja indicada la **migración a la nube en fases posteriores** mediante un nodo `<<future>>`.
+
+![Diagrama de Despliegue — On-premise SICA](documentación/entregablesFinales/UML%20ARQUITECTONICO/Diagrama%20Despliegue.svg)
+
+Nodos principales:
+
+- **`<<device>>` PC / Móvil (Usuarios):** Navegador / App (React + REST).
+- **`<<execution environment>>` Servidor de Borde:** Nginx + API Gateway (**Kong**), punto único de entrada vía HTTPS/REST.
+- **`<<execution environment>>` Servidor de Aplicaciones 1 (Spring Boot / Java):** Servicio Evaluación Adaptativa, Servicio Certificación (PKI/Blockchain – **Hyperledger Fabric**), Servicio Auditoría Anti-fraude.
+- **`<<execution environment>>` Servidor de Aplicaciones 2 (Spring Boot / Java + Python):** Servicio Integración Académica (**Keycloak** – LDAP/SAML/OAuth2), Servicio Analítica Regional (**Apache Superset**).
+- **`<<message broker>>` Servidor de Mensajería:** Bus de Eventos asíncrono (**Apache Kafka / RabbitMQ**).
+- **`<<db server>>` Servidor de Base de Datos:** **PostgreSQL** — BD Evaluación (OLTP) y BD Certificados (OLTP).
+- **`<<storage>>` Servidor de Almacenamiento:** Almacén de Evidencia (**MinIO**, objetos) y Repositorio OLAP (**ClickHouse**).
+- **`<<external>>`** Sistemas de Universidades (USAC, UCR, UES) y Ministerios / Secretaría SICA.
+- **`<<future>>` Nube Pública:** destino de la migración en fases posteriores.
+
 ### 7.2 Diagrama de componentes
- 
+
+El diagrama de componentes detalla los componentes de software y las **interfaces** que cada uno expone o consume.
+
+![Diagrama de Componentes](documentación/entregablesFinales/UML%20ARQUITECTONICO/Diagrama%20Componentes.svg)
+
+| Componente | Interfaces que expone |
+|---|---|
+| **Evaluación Adaptativa** | `IExamenAdaptativo`, `ICapturaEvidencia` |
+| **Certificación Regional** | `IEmisionCertificado`, `IVerificacionCertificado`, `IRevocacionCertificado` |
+| **Auditoría Anti-fraude** | `IDeteccionFraude`, `IReporteAuditoria`, `IDerechoAlOlvido` |
+| **Integración Académica** | `IAutenticacionFederada`, `ISincronizacionDatos`, `IGestionErrorIntegracion` |
+| **Analítica Regional** | `IDashboardAnalitico`, `IAnonimizacion` |
+| **Motor Criptográfico (PKI/Blockchain)** | servicios de firma y registro inmutable usados por Certificación |
+
+Componentes de soporte transversales: **Bus de Eventos** (publica/consume evidencia, eventos y ETL), **Bitácora Inmutable** (registra auditoría), **Almacén de Evidencia (frío)** y **Repositorio Analítico (OLAP)**. Las relaciones del diagrama (*usa*, *publica eventos*, *publica evidencia*, *registra*, *consume*, *consume (ETL)*, *lee*, *publica cambio de estado*, *consume (revocación)*) muestran cómo el bus de eventos desacopla a los productores de los consumidores.
+
 ### 7.3 Diagrama de distribución
- 
+
+El diagrama de distribución profundiza en los **nodos físicos, la red y los protocolos** de comunicación dentro del Data Center on-premise del SICA.
+
+![Diagrama de Distribución — Nodos, Red y Protocolos](documentación/entregablesFinales/UML%20ARQUITECTONICO/PRCCD_Diagrama_Distribucion.svg)
+
+Protocolos por enlace:
+
+| Enlace | Protocolo |
+|---|---|
+| Estación Cliente → Servidor de Borde | **HTTPS / TLS** |
+| Servidor de Borde → Servidores de Aplicaciones | **HTTP/REST (LAN)** |
+| Servicios → Servidor de Mensajería | **AMQP / Kafka** |
+| Servicios → Servidor de Base de Datos | **JDBC / TCP** |
+| Consumo de eventos / lectura OLAP | **TCP** |
+| Servicios → Nodo Ledger (Blockchain/PKI) | **gRPC / TLS** |
+| Sistemas Universidades → Integración | **LDAP / SAML / OAuth2 · JSON / XML / CSV (HTTPS)** |
+| Ministerios / Secretaría SICA | **HTTPS** (validación de certificados, reportes, escalamiento de fraude) |
+| Data Center → Nube Pública | **replicación futura** (fase posterior) |
+
 ### 7.4 Justificación de frameworks y tecnologías en relación a los drivers arquitectónicos
- 
+
+Todas las tecnologías seleccionadas son **Open Source** (RES-07) y desplegables **on-premise** con preparación para migrar a la nube (RES-11), respetando el presupuesto de USD 180,000 (RES-02).
+
+| Tecnología | Rol en la arquitectura | Drivers que satisface |
+|---|---|---|
+| **React + REST** | Capa de presentación (portales y app de evaluación) | EaC-18 (usabilidad de dashboards), EaC-04 (no retrasar el inicio de la evaluación) |
+| **Kong (API Gateway) + Nginx** | Punto único de entrada, enrutamiento y seguridad de borde | EaC-01/EaC-02 (escalabilidad y disponibilidad en picos), EaC-07 (TLS), EaC-14 (trazabilidad de accesos) |
+| **Spring Boot (Java)** | Contenedor de los servicios SOA | EaC-19 (modificabilidad), EaC-06 (rendimiento del examen adaptativo), RES-13 (equipos pequeños en paralelo) |
+| **Keycloak** | Autenticación federada multiprotocolo (LDAP/SAML/OAuth2) | RF-01, EaC-03 (interoperabilidad), RES-03, EaC-16 (tolerancia a fallos) |
+| **Hyperledger Fabric / PKI** | Emisión criptográfica e inmutabilidad de certificados | RF-06, RF-07, RF-08, EaC-11 (integridad), EaC-12 (verificabilidad), RES-08/RES-09 |
+| **Apache Kafka / RabbitMQ** | Bus de eventos asíncrono | RF-04, RF-15, EaC-10 (detección de fraude no intrusiva), EaC-13 (confiabilidad), EaC-16, EaC-17 (separar analítica de lo transaccional) |
+| **PostgreSQL (OLTP)** | Bases de datos transaccionales de evaluación y certificación | RF-03, RF-09/RF-10, EaC-07 (encriptación en reposo), EaC-13 |
+| **MinIO (objetos)** | Almacén de evidencia anti-fraude optimizado en costos | RF-04, EaC-08 (retención inalterable 5 años), EaC-09 (eficiencia de costos), RES-06/RES-10 |
+| **ClickHouse (OLAP)** | Repositorio analítico segregado | RF-17, RF-18, EaC-15 (privacidad/anonimización), EaC-17, EaC-18 |
+| **Apache Superset** | Dashboards analíticos regionales | RF-17, EaC-18 (comprensible para alta gerencia) |
+
 ---
  
 ## 8. Diseño de Datos
