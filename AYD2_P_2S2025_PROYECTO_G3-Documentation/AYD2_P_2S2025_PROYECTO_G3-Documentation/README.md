@@ -1063,17 +1063,23 @@ UNIVERSIDAD → USUARIO → EVALUACIÓN → RESPUESTA
  
 ## 9. Diseño de Interfaces (UI/UX)
  
-### 9.1 Prototipo: Registro y autenticación federada
+### 9.1 Prototipo: Acceso y Autenticación de Usuarios
+![alt text](pro1.png)
  
-### 9.2 Prototipo: Evaluación adaptativa
+### 9.2 Prototipo: Panel Principal del Candidato
+![alt text](pro5.png)
+
+### 9.3 Prototipo: Evaluación Adaptativa de Competencias
+![alt text](pro2.png)
  
-### 9.3 Prototipo: Gestión de certificados
- 
-### 9.4 Prototipo: Panel de auditoría
- 
+### 9.4 Prototipo: Gestión de certificados
+![alt text](pro3.png)
+
+
+![alt text](pro4.png)
+
 ### 9.5 Prototipo: Dashboard analítico regional
- 
-### 9.6 Prototipo: Panel de administración TI
+![alt text](pro6.png)
  
 ---
  
