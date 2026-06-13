@@ -1,0 +1,3 @@
+# core: 
+
+La Plataforma Regional de Certificación de Competencias Digitales (PRCCD) permite evaluar, certificar y validar las competencias digitales de estudiantes y profesionales de Centroamérica. La plataforma integra a universidades de la región para autenticar usuarios, administrar procesos de evaluación adaptativa, emitir certificados digitales con validez regional y proporcionar información analítica a entidades educativas y gubernamentales para apoyar la toma de decisiones sobre el desarrollo de competencias digitales.
