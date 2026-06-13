@@ -248,6 +248,26 @@ La Plataforma Regional de Certificación de Competencias Digitales (PRCCD) permi
 
 ---
 
+### 3.c Descripciones textuales de CDU (Primera Descomposición)
+
+#### CDU-01 — Gestionar evaluación adaptativa
+
+![Descripción Textual CDU-01](documentación/entregablesFinales/Descripciones%20textuales/CDU-01.png)
+
+---
+
+#### CDU-02 — Gestión de certificados regionales
+
+![Descripción Textual CDU-02](documentación/entregablesFinales/Descripciones%20textuales/CDU-02.png)
+
+---
+
+#### CDU-03 — Gestionar auditorías y evidencia anti-fraude
+
+![Descripción Textual CDU-03](documentación/entregablesFinales/Descripciones%20textuales/CDU-03.png)
+
+---
+
 ### 3.b Detalle de drivers RF, EaC y de Restricción asociados a cada CDU
 
 ---
