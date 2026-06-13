@@ -212,7 +212,39 @@ La Plataforma Regional de Certificación de Competencias Digitales (PRCCD) permi
 
 ### 3.a Diagrama de casos de uso expandidos del sistema
 
+#### Vista general — Diagrama de CDU Expandidos
+
 ![Diagrama de Casos de Uso Expandidos](documentación/entregablesFinales/CDUS/DiagramaCasosDeUsoExpandido.png)
+
+---
+
+#### CUN: Gestionar Evaluación Adaptativa
+
+![CUN Gestionar Evaluación Adaptativa](documentación/entregablesFinales/CDUS/CUN-Gestionar%20Evaluacion%20Adaptativa.png)
+
+---
+
+#### CUN: Gestión de Certificados Regionales
+
+![CUN Gestión de Certificados Regionales](documentación/entregablesFinales/CDUS/CUN-GESTION_CERTIFICADOS.png)
+
+---
+
+#### CUN: Gestionar Auditorías y Evidencia Anti-fraude
+
+![CUN Gestionar Auditorías y Evidencia Anti-fraude](documentación/entregablesFinales/CDUS/CUN-GESTION_AUDITORIA.png)
+
+---
+
+#### CUN: Integrar Información Académica con Universidades
+
+![CUN Integrar Información Académica con Universidades](documentación/entregablesFinales/CDUS/CUN-Integrar_Informacion.png)
+
+---
+
+#### CUN: Analítica Regional de Competencias
+
+![CUN Analítica Regional de Competencias](documentación/entregablesFinales/CDUS/CUN-ANALITICA.png)
 
 ---
 
