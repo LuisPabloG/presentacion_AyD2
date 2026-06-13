@@ -22,6 +22,12 @@
 | 7 | | |
  
 ---
+
+## Diagrama de Contexto del Sistema
+
+![Diagrama de Contexto](Diagrama%20de%20Contexto.jpeg)
+
+---
  
 ## 1. Identificación del caso de negocio y Stakeholders
 
