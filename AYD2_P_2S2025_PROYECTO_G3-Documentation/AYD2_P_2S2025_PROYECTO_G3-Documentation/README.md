@@ -212,7 +212,59 @@ La Plataforma Regional de Certificación de Competencias Digitales (PRCCD) permi
 
 ### 3.a Diagrama de casos de uso expandidos del sistema
 
+#### Vista general — Diagrama de CDU Expandidos
+
 ![Diagrama de Casos de Uso Expandidos](documentación/entregablesFinales/CDUS/DiagramaCasosDeUsoExpandido.png)
+
+---
+
+#### CUN: Gestionar Evaluación Adaptativa
+
+![CUN Gestionar Evaluación Adaptativa](documentación/entregablesFinales/CDUS/CUN-Gestionar%20Evaluacion%20Adaptativa.png)
+
+---
+
+#### CUN: Gestión de Certificados Regionales
+
+![CUN Gestión de Certificados Regionales](documentación/entregablesFinales/CDUS/CUN-GESTION_CERTIFICADOS.png)
+
+---
+
+#### CUN: Gestionar Auditorías y Evidencia Anti-fraude
+
+![CUN Gestionar Auditorías y Evidencia Anti-fraude](documentación/entregablesFinales/CDUS/CUN-GESTION_AUDITORIA.png)
+
+---
+
+#### CUN: Integrar Información Académica con Universidades
+
+![CUN Integrar Información Académica con Universidades](documentación/entregablesFinales/CDUS/CUN-Integrar_Informacion.png)
+
+---
+
+#### CUN: Analítica Regional de Competencias
+
+![CUN Analítica Regional de Competencias](documentación/entregablesFinales/CDUS/CUN-ANALITICA.png)
+
+---
+
+### 3.c Descripciones textuales de CDU (Primera Descomposición)
+
+#### CDU-01 — Gestionar evaluación adaptativa
+
+![Descripción Textual CDU-01](documentación/entregablesFinales/Descripciones%20textuales/CDU-01.png)
+
+---
+
+#### CDU-02 — Gestión de certificados regionales
+
+![Descripción Textual CDU-02](documentación/entregablesFinales/Descripciones%20textuales/CDU-02.png)
+
+---
+
+#### CDU-03 — Gestionar auditorías y evidencia anti-fraude
+
+![Descripción Textual CDU-03](documentación/entregablesFinales/Descripciones%20textuales/CDU-03.png)
 
 ---
 
@@ -936,13 +988,70 @@ Todas las tecnologías seleccionadas son **Open Source** (RES-07) y desplegables
 
 ### 8.2 Justificación — soporte a auditoría y almacenamiento a largo plazo
 
-| Entidad | Justificación del enunciado |
+#### Entidades del modelo y su justificación
+
+| Tabla | Justificación resumida |
 |---|---|
-| `EVIDENCIA_ANTIFRAUDE` | El enunciado exige *"retención inalterable por un período de 5 años para cumplir con el GDPR y legislaciones locales"*. El campo `fecha_expiracion` y `contenido_cifrado` soportan esto directamente. |
-| `REGISTRO_BLOCKCHAIN` | El enunciado exige *"bitácora inmutable que demuestre que ni la calificación ni la identidad del portador han sido alteradas desde el momento de la emisión"*. El campo `hash_transaccion` garantiza la inmutabilidad. |
-| `AUDITORIA` | El enunciado exige *"rastro de auditoría inmutable respaldado por firmas electrónicas avanzadas"*. Esta entidad registra cada revisión con su resultado y observaciones. |
-| `CERTIFICADO.deleted_at` en `USUARIO` | El enunciado exige *"garantizar el derecho al olvido"*. El campo `deleted_at` permite soft delete cumpliendo GDPR sin romper la integridad referencial. |
-| `RESPUESTA.timestamp_respuesta` | El enunciado exige trazabilidad completa para *"prevenir el fraude académico o la alteración de notas a nivel de base de datos"*. |
+| `UNIVERSIDAD` | Soporta LDAP, SAML y OAuth2 para USAC, UCR y UES |
+| `USUARIO` | Gestiona candidatos con soft delete para derecho al olvido |
+| `COMPETENCIA` | Define las competencias digitales certificables por área |
+| `EVALUACION` | Controla sesiones adaptativas restringidas a la primera semana del mes |
+| `PREGUNTA` | Banco de preguntas con nivel de dificultad para el motor adaptativo |
+| `RESPUESTA` | Persiste cada respuesta con timestamp para trazabilidad anti-fraude |
+| `EVIDENCIA_ANTIFRAUDE` | Almacena capturas, logs y video cifrados con retención de 5 años |
+| `CERTIFICADO` | Emite credenciales con firma electrónica y validez transfronteriza |
+| `REGISTRO_BLOCKCHAIN` | Bitácora inmutable en Hyperledger para garantizar no alteración |
+| `AUDITORIA` | Rastro exigido por Ministerios con resultado y observaciones |
+
+---
+
+#### ¿Por qué relacional y no NoSQL?
+
+| Criterio | Justificación técnica |
+|---|---|
+| **Transaccionalidad** | Las evaluaciones y certificados requieren cumplimiento estricto de propiedades ACID. |
+| **Integridad Referencial** | Uso de Foreign Keys para garantizar que no existan certificados huérfanos o datos inconsistentes. |
+| **Auditoría Inmutable** | Constraints y timestamps nativos que garantizan la trazabilidad total de los registros. |
+| **Presupuesto** | Implementación sobre Oracle XE (Open Source/Free), cumpliendo el límite de USD 180,000. |
+
+---
+
+#### ¿Cómo soporta las necesidades de auditoría?
+
+**`EVIDENCIA_ANTIFRAUDE`**
+> *"retención inalterable por un período de 5 años para cumplir con el GDPR"*
+- Campo `fecha_expiracion` controla automáticamente el ciclo de vida de la evidencia biométrica.
+- Campo `hash_integridad` garantiza que el contenido cifrado no ha sido alterado desde su captura.
+
+**`REGISTRO_BLOCKCHAIN`**
+> *"bitácora inmutable que demuestre que ni la calificación ni la identidad han sido alteradas"*
+- Campo `hash_transaccion` único e inmutable registrado en Hyperledger.
+
+**`AUDITORIA`**
+> *"rastro de auditoría inmutable respaldado por firmas electrónicas avanzadas"*
+- Registra cada revisión con su resultado y observaciones, cumpliendo el requerimiento de los Ministerios de Trabajo y Direcciones Financieras.
+
+---
+
+#### ¿Cómo soporta el almacenamiento a largo plazo?
+
+- **Derecho al olvido** → `USUARIO.deleted_at` permite soft delete sin romper la integridad referencial, *"garantizando el derecho al olvido"* exigido por el GDPR.
+- **Retención 5 años** → `EVIDENCIA_ANTIFRAUDE.fecha_expiracion` controla automáticamente el ciclo de vida de la evidencia biométrica.
+- **Rendimiento en picos** → 8 índices creados para soportar *"picos de tráfico agresivos con miles de usuarios simultáneos la primera semana de cada mes"*.
+
+---
+
+#### Flujo de datos del proceso principal
+
+```
+UNIVERSIDAD → USUARIO → EVALUACIÓN → RESPUESTA
+                                ↓
+                    EVIDENCIA_ANTIFRAUDE
+                                ↓
+              CERTIFICADO → REGISTRO_BLOCKCHAIN
+                                ↓
+                           AUDITORÍA
+```
 
 ---
  
@@ -1219,7 +1328,7 @@ Beneficios:
 
 El proyecto se gestiona mediante un tablero Kanban con el flujo de trabajo: **To Do → Blocked → In Progress → Ready for Testing → Test/QA → Done**.
 
-![Tablero Kanban](documentación/img/tablero-kanban.png)
+![Tablero Kanban](documentación/kanbanCaptura.png)
 
 ### 11.2 Backlog del proyecto (historias de usuario y tareas de desarrollo)
 
