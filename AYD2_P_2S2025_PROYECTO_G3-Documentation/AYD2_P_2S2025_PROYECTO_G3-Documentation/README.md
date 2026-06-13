@@ -9,7 +9,7 @@
  
 ---
  
-## Integrantes
+## Integrantes GRUPO 3
  
 | # | Nombre completo | Carnet |
 |---|---|---|
@@ -19,7 +19,7 @@
 | 4 | Jeysson Ezequiel Godoy Torres| 3429393512210 |
 | 5 | Kenneth Isaí Aquino Ortiz| 202100678 |
 | 6 | Diego Andres Aguilar Díaz | 2734901842001 |
-| 7 | | |
+| 7 |Kevin Golwer Enrique Ruiz Barbales |201603009 |
  
 ---
 
